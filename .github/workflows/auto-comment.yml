@@ -1,18 +1,53 @@
-name: Auto Comment
-on: [issues, pull_request]
-jobs:
-  run:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: wow-actions/auto-comment@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          issuesOpened: |
-            👋 @{{ author }}
-            Thank you for raising an issue. We will will investigate into the matter and get back to you as soon as possible.
-            Please make sure you have given us as much context as possible.
+name: Issue Helper Bot
+ 
+on:
 
-          pullRequestOpened: |
-            👋 @{{ author }}
-            Thank you for raising your pull request.
-            Please make sure you have followed our contributing guidelines. We will review it as soon as possible
+  issues:
+
+    types: [labeled]
+
+  pull_request:
+
+    types: [labeled]
+ 
+permissions:
+
+  issues: write
+
+ 
+jobs:
+
+  reply-to-label:
+
+    if: github.event.label.name == 'bug'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Post Comment using GitHub Script
+
+        uses: actions/github-script@v7
+
+        with:
+
+          script: |
+
+            const issueNumber = context.issue.number;
+
+            const message = `👋 Hello @${context.actor}! Thanks for flagging this **bug**. 
+
+            Our team has been notified and we will look into this as soon as possible. In the meantime, please ensure you have attached logs or screenshots!`;
+
+            github.rest.issues.createComment({
+
+              owner: context.repo.owner,
+
+              repo: context.repo.repo,
+
+              issue_number: issueNumber,
+
+              body: message
+
+            });
+ 
